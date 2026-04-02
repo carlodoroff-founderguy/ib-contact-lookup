@@ -151,21 +151,27 @@ def verify_email(email_value: str) -> dict:
 
 def apply_flag(email_value: str, result: dict) -> str:
     """
-    Append a verification flag to an email cell value if needed.
+    Process an email based on its Bouncer verification status.
 
     Rules:
-      deliverable   → no change
+      deliverable   → no change (keep as-is)
       skipped       → no change
-      undeliverable → append " ⚠ INVALID"
-      risky         → append " ⚠ RISKY"
-      unknown       → append " ⚠ UNVERIFIED"
+      risky         → keep, append " ⚠ RISKY"
+      undeliverable → REMOVE (return empty string)
+      unknown       → REMOVE (return empty string)
 
-    The original email is always preserved; never deleted.
+    Undeliverable and unknown emails are hidden entirely because they
+    are either invalid or cannot be confirmed.
     """
     status = result.get("status", "unknown")
     if status in ("deliverable", "skipped"):
         return email_value
 
+    # Remove undeliverable and unknown emails entirely
+    if status in ("undeliverable", "unknown"):
+        return ""
+
+    # Risky emails: keep but flag
     flag        = _STATUS_FLAGS.get(status, f" ⚠ {status.upper()}")
     reason_note = _REASON_NOTES.get(result.get("reason", ""), "")
 

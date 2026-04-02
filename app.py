@@ -1315,7 +1315,7 @@ st.markdown(
 )
 
 # ── 2b. Navigation bar ──────────────────────────────────────────────────────
-_nav_cols = st.columns([1.2, 1.3, 6])
+_nav_cols = st.columns([1.2, 1.3, 1.2, 4.8])
 with _nav_cols[0]:
     if st.button(
         "◈  Ticker Research",
@@ -1333,6 +1333,15 @@ with _nav_cols[1]:
         use_container_width=True,
     ):
         st.session_state.nav_page = "SPAC Research"
+        st.rerun()
+with _nav_cols[2]:
+    if st.button(
+        "📤  Bulk Enrich",
+        key="nav_bulk",
+        type="primary" if st.session_state.nav_page == "Bulk Enrich" else "secondary",
+        use_container_width=True,
+    ):
+        st.session_state.nav_page = "Bulk Enrich"
         st.rerun()
 
 st.markdown("<hr style='margin:0.5rem 0 1rem 0;'>", unsafe_allow_html=True)
@@ -2117,3 +2126,333 @@ elif st.session_state.nav_page == "SPAC Research":
                 mime="text/csv",
                 use_container_width=True,
             )
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ── PAGE: Bulk Enrich ───────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+
+elif st.session_state.nav_page == "Bulk Enrich":
+
+    st.markdown(
+        '<p style="font-size:14px;color:#6B7280;line-height:1.75;margin-bottom:24px;'
+        'font-family:DM Sans,sans-serif;">'
+        'Upload a spreadsheet with <span style="color:#B8960C;">company names</span> and '
+        '<span style="color:#B8960C;">executive names/titles</span> — the platform will '
+        'find their emails and phone numbers via SalesQL + LinkedIn.</p>',
+        unsafe_allow_html=True,
+    )
+
+    # ── Session state defaults ───────────────────────────────────────────────
+    if "bulk_df" not in st.session_state:
+        st.session_state.bulk_df = None
+    if "bulk_col_map" not in st.session_state:
+        st.session_state.bulk_col_map = {}
+    if "bulk_results" not in st.session_state:
+        st.session_state.bulk_results = None
+    if "bulk_running" not in st.session_state:
+        st.session_state.bulk_running = False
+
+    # ── File upload ──────────────────────────────────────────────────────────
+    uploaded = st.file_uploader(
+        "Upload spreadsheet (.xlsx or .csv)",
+        type=["xlsx", "csv"],
+        key="bulk_upload",
+    )
+
+    if uploaded is not None:
+        try:
+            if uploaded.name.endswith(".csv"):
+                df = pd.read_csv(uploaded)
+            else:
+                # Try to read — auto-detect header row
+                df = pd.read_excel(uploaded, engine="openpyxl")
+                # If first row looks like a title (all nulls after col 0), skip rows
+                if df.shape[1] > 3 and df.iloc[0].isna().sum() > df.shape[1] * 0.6:
+                    # Re-read skipping title rows — find the real header
+                    for skip in range(1, 6):
+                        df = pd.read_excel(uploaded, engine="openpyxl", header=skip)
+                        if df.columns.dtype == object and not df.columns[0] is None:
+                            break
+            st.session_state.bulk_df = df
+        except Exception as e:
+            st.error(f"Could not read file: {e}")
+            st.session_state.bulk_df = None
+
+    df = st.session_state.bulk_df
+
+    if df is not None:
+        st.markdown(f"**{len(df)} rows  ·  {len(df.columns)} columns**")
+
+        # ── Preview ──────────────────────────────────────────────────────────
+        with st.expander("Preview uploaded data", expanded=False):
+            st.dataframe(df.head(20), use_container_width=True)
+
+        # ── Column mapping ───────────────────────────────────────────────────
+        st.markdown("##### Map your columns")
+        st.markdown(
+            '<p style="font-size:13px;color:#6B7280;">Tell us which columns contain '
+            'the company name, person name, and title. The rest is automatic.</p>',
+            unsafe_allow_html=True,
+        )
+
+        all_cols = ["— (not mapped)"] + list(df.columns)
+
+        # Auto-detect columns by common names
+        def _auto_detect(candidates: list[str]) -> str:
+            for c in df.columns:
+                if str(c).strip().lower() in candidates:
+                    return str(c)
+            # Partial match
+            for c in df.columns:
+                cl = str(c).strip().lower()
+                for cand in candidates:
+                    if cand in cl or cl in cand:
+                        return str(c)
+            return "— (not mapped)"
+
+        _def_company = _auto_detect(["company", "company name", "organization", "firm"])
+        _def_name    = _auto_detect(["name", "full name", "executive name", "contact name", "person", "executive"])
+        _def_title   = _auto_detect(["title", "role", "job title", "position"])
+        _def_website = _auto_detect(["website", "url", "domain", "company website", "web"])
+        _def_ticker  = _auto_detect(["ticker", "symbol", "stock"])
+
+        mc1, mc2, mc3 = st.columns(3)
+        with mc1:
+            col_company = st.selectbox("Company", all_cols, index=all_cols.index(_def_company) if _def_company in all_cols else 0, key="bulk_map_company")
+        with mc2:
+            col_name = st.selectbox("Person Name", all_cols, index=all_cols.index(_def_name) if _def_name in all_cols else 0, key="bulk_map_name")
+        with mc3:
+            col_title = st.selectbox("Title / Role", all_cols, index=all_cols.index(_def_title) if _def_title in all_cols else 0, key="bulk_map_title")
+
+        mc4, mc5, mc6 = st.columns(3)
+        with mc4:
+            col_website = st.selectbox("Website (optional)", all_cols, index=all_cols.index(_def_website) if _def_website in all_cols else 0, key="bulk_map_website")
+        with mc5:
+            col_ticker = st.selectbox("Ticker (optional)", all_cols, index=all_cols.index(_def_ticker) if _def_ticker in all_cols else 0, key="bulk_map_ticker")
+        with mc6:
+            col_linkedin = st.selectbox("LinkedIn URL (optional)", all_cols, index=all_cols.index(_auto_detect(["linkedin", "linkedin url", "linkedin_url", "li url"])) if _auto_detect(["linkedin", "linkedin url", "linkedin_url", "li url"]) in all_cols else 0, key="bulk_map_linkedin")
+
+        _unmapped = "— (not mapped)"
+        _has_required = col_company != _unmapped and col_name != _unmapped
+
+        if not _has_required:
+            st.warning("Please map at least **Company** and **Person Name** columns to proceed.")
+
+        # ── Enrichment settings ──────────────────────────────────────────────
+        st.markdown("---")
+        ec1, ec2 = st.columns(2)
+        with ec1:
+            bulk_use_linkedin = st.checkbox("Enable LinkedIn search", value=True, key="bulk_linkedin")
+        with ec2:
+            bulk_verify_emails = st.checkbox("Verify emails (Bouncer)", value=True, key="bulk_verify")
+
+        # ── Run enrichment ───────────────────────────────────────────────────
+        if _has_required and st.button("🚀  Enrich Contacts", type="primary", use_container_width=True, key="bulk_run"):
+            st.session_state.bulk_running = True
+            _delay = 0.8
+
+            progress_bar = st.progress(0)
+            status_text  = st.empty()
+            log_box      = st.empty()
+            log_lines: list[str] = []
+
+            def _blog(msg: str, level: str = "dim"):
+                css = level if level in ("ok", "warn", "err", "info", "dim") else "dim"
+                log_lines.append(f'<span class="{css}">{msg}</span>')
+                visible = log_lines[-25:]
+                log_box.markdown(
+                    '<div class="run-log">' + "<br>".join(visible) + '</div>',
+                    unsafe_allow_html=True,
+                )
+
+            results: list[dict] = []
+            total = len(df)
+
+            for idx, raw_row in df.iterrows():
+                i = int(idx) if isinstance(idx, (int, float)) else results.__len__()
+                pct = (i + 1) / total
+                progress_bar.progress(pct)
+
+                company  = str(raw_row.get(col_company, "")).strip() if col_company != _unmapped else ""
+                name     = str(raw_row.get(col_name, "")).strip() if col_name != _unmapped else ""
+                title    = str(raw_row.get(col_title, "")).strip() if col_title != _unmapped else ""
+                website  = str(raw_row.get(col_website, "")).strip() if col_website != _unmapped else ""
+                ticker   = str(raw_row.get(col_ticker, "")).strip() if col_ticker != _unmapped else ""
+                li_url   = str(raw_row.get(col_linkedin, "")).strip() if col_linkedin != _unmapped else ""
+
+                # Clean up nan values from pandas
+                for _v in [company, name, title, website, ticker, li_url]:
+                    if _v.lower() in ("nan", "none", ""):
+                        pass  # handled below
+                company = "" if company.lower() in ("nan", "none") else company
+                name    = "" if name.lower() in ("nan", "none") else name
+                title   = "" if title.lower() in ("nan", "none") else title
+                website = "" if website.lower() in ("nan", "none") else website
+                ticker  = "" if ticker.lower() in ("nan", "none") else ticker
+                li_url  = "" if li_url.lower() in ("nan", "none") else li_url
+
+                if not company or not name:
+                    _blog(f"⚠  Row {i+1}: skipped (missing company or name)", "warn")
+                    results.append({
+                        "Row": i + 1, "Ticker": ticker, "Company": company,
+                        "Name": name, "Title": title,
+                        "Email": "", "Phone": "", "LinkedIn": li_url,
+                        "Source": "skipped",
+                    })
+                    continue
+
+                status_text.markdown(f"**{i+1}/{total}**  ·  {name} @ {company}")
+                _blog(f"[{i+1}/{total}]  {name}  ·  {company}  ·  {title}", "info")
+
+                enrichment: dict = {}
+                source = ""
+
+                try:
+                    # ── Step 1: If LinkedIn URL is provided, enrich directly ──
+                    if li_url and "linkedin.com/in/" in li_url:
+                        _blog(f"   LinkedIn URL provided → SalesQL enriching …", "dim")
+                        time.sleep(_delay)
+                        enrichment = enrich_by_url(li_url)
+                        if enrichment.get("best_email") or enrichment.get("phone"):
+                            source = "salesql_linkedin"
+                            _blog(f"  ✓ {enrichment.get('best_email','—')}  {enrichment.get('phone','—')}", "ok")
+
+                    # ── Step 2: SalesQL name search ──────────────────────────
+                    if not enrichment.get("best_email") and not enrichment.get("phone"):
+                        _blog(f"   SalesQL name search …", "dim")
+                        first, last = split_name(name)
+                        time.sleep(_delay)
+                        enrichment = search_by_name_with_variations(
+                            first, last, name, company,
+                            website=website,
+                            is_spac=False,
+                        )
+                        if enrichment.get("best_email") or enrichment.get("phone"):
+                            source = "salesql_name"
+                            if not li_url:
+                                li_url = enrichment.get("linkedin_url", "")
+                            _blog(f"  ✓ {enrichment.get('best_email','—')}  {enrichment.get('phone','—')}", "ok")
+
+                    # ── Step 3: LinkedIn search + SalesQL enrich ─────────────
+                    if not enrichment.get("best_email") and not enrichment.get("phone") and bulk_use_linkedin:
+                        _blog(f"   LinkedIn search → {name} …", "dim")
+                        found_li = find_linkedin_url(name, company, title, sleep_range=(_delay, _delay + 0.3))
+                        if found_li:
+                            li_url = found_li
+                            _blog(f"   LinkedIn: {found_li} → enriching …", "dim")
+                            time.sleep(_delay)
+                            enrichment = enrich_by_url(found_li)
+                            if enrichment.get("best_email") or enrichment.get("phone"):
+                                source = "linkedin_enrich"
+                                _blog(f"  ✓ {enrichment.get('best_email','—')}  {enrichment.get('phone','—')}", "ok")
+
+                    # ── Step 4: Bouncer verification ─────────────────────────
+                    best_email = enrichment.get("best_email", "")
+                    if best_email and bulk_verify_emails:
+                        from lookup.bouncer_verifier import verify_email, apply_flag
+                        _blog(f"   Bouncer: verifying {best_email} …", "dim")
+                        time.sleep(0.3)
+                        vresult = verify_email(best_email)
+                        best_email = apply_flag(best_email, vresult)
+                        vstatus = vresult.get("status", "unknown")
+                        if vstatus == "deliverable":
+                            _blog(f"   ✓ Bouncer: deliverable", "ok")
+                        elif vstatus in ("undeliverable", "unknown"):
+                            _blog(f"   ✗ Bouncer: {vstatus} — email removed", "warn")
+                        else:
+                            _blog(f"   ⚠ Bouncer: {vstatus}", "warn")
+
+                    if not source:
+                        source = "not_found"
+                        _blog(f"  ⚠ No contact found", "warn")
+
+                except Exception as e:
+                    _blog(f"  ✗ Error: {e}", "err")
+                    source = "error"
+                    best_email = ""
+
+                results.append({
+                    "Row": i + 1,
+                    "Ticker": ticker,
+                    "Company": company,
+                    "Name": name,
+                    "Title": title,
+                    "Email": best_email if isinstance(best_email, str) else enrichment.get("best_email", ""),
+                    "Phone": enrichment.get("phone", "") or "",
+                    "LinkedIn": li_url or enrichment.get("linkedin_url", "") or "",
+                    "Source": source,
+                })
+
+            progress_bar.progress(1.0)
+            status_text.markdown("**✅ Enrichment complete**")
+
+            result_df = pd.DataFrame(results)
+            st.session_state.bulk_results = result_df
+            st.session_state.bulk_running = False
+
+            # Stats
+            found = len([r for r in results if r.get("Email") or r.get("Phone")])
+            _blog(f"\n✅  Done — {found}/{total} contacts enriched", "ok")
+
+        # ── Show results ─────────────────────────────────────────────────────
+        if st.session_state.bulk_results is not None and not st.session_state.bulk_running:
+            rdf = st.session_state.bulk_results
+            st.markdown("---")
+            st.markdown("##### Enriched Results")
+
+            # Metrics
+            total_r  = len(rdf)
+            found_r  = len(rdf[(rdf["Email"].str.len() > 0) | (rdf["Phone"].str.len() > 0)])
+            email_r  = len(rdf[rdf["Email"].str.len() > 0])
+            phone_r  = len(rdf[rdf["Phone"].str.len() > 0])
+            m1, m2, m3, m4 = st.columns(4)
+            m1.metric("Total", total_r)
+            m2.metric("Found", found_r)
+            m3.metric("Emails", email_r)
+            m4.metric("Phones", phone_r)
+
+            st.dataframe(
+                rdf,
+                use_container_width=True,
+                column_config={
+                    "LinkedIn": st.column_config.LinkColumn("LinkedIn"),
+                    "Email": st.column_config.TextColumn("Email"),
+                },
+            )
+
+            # ── Download buttons ─────────────────────────────────────────────
+            dl1, dl2 = st.columns(2)
+            with dl1:
+                csv_data = rdf.to_csv(index=False)
+                st.download_button(
+                    "⬇  Download CSV",
+                    data=csv_data,
+                    file_name=f"enriched_contacts_{date.today().isoformat()}.csv",
+                    mime="text/csv",
+                    use_container_width=True,
+                )
+            with dl2:
+                # Excel with formatting
+                buf = io.BytesIO()
+                with pd.ExcelWriter(buf, engine="openpyxl") as writer:
+                    rdf.to_excel(writer, index=False, sheet_name="Enriched Contacts")
+                    ws = writer.sheets["Enriched Contacts"]
+                    from openpyxl.styles import Font, PatternFill, Alignment
+                    header_font = Font(bold=True, color="FFFFFF", size=11)
+                    header_fill = PatternFill(start_color="1C2B3A", end_color="1C2B3A", fill_type="solid")
+                    for cell in ws[1]:
+                        cell.font = header_font
+                        cell.fill = header_fill
+                        cell.alignment = Alignment(horizontal="center")
+                    for col in ws.columns:
+                        max_len = max(len(str(c.value or "")) for c in col)
+                        ws.column_dimensions[col[0].column_letter].width = min(max_len + 4, 40)
+                buf.seek(0)
+                st.download_button(
+                    "⬇  Download Excel",
+                    data=buf.getvalue(),
+                    file_name=f"enriched_contacts_{date.today().isoformat()}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                )
