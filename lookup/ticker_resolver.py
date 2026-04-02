@@ -226,4 +226,19 @@ def resolve_ticker(ticker: str) -> Optional[dict]:
 
     # Filter to CEO/CFO/COO/President
     info["targets"] = [e for e in info["executives"] if is_target(e["title"])]
+
+    # ── Web search fallback: if yfinance/Yahoo returned no executives,
+    #    search the web for "<Company> CEO/CFO" to find names ─────────────
+    if not info["targets"] and info.get("company"):
+        try:
+            from lookup.web_search_fallback import search_executives
+            web_execs = search_executives(info["company"], roles=["CEO", "CFO"], delay=1.0)
+            for we in web_execs:
+                info["targets"].append(we)
+                # Also add to the full executives list
+                info["executives"].append(we)
+                print(f"    [web-search] Found {we['title']}: {we['name']}")
+        except Exception as e:
+            print(f"    [web-search] fallback error: {e}")
+
     return info

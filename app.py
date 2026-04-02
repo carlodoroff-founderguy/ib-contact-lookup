@@ -586,19 +586,32 @@ def process_ticker(ticker: str, log_fn, prog_fn, skip_linkedin: bool, delay: flo
     log_fn(f"✓  [{ticker}]  {company}  ·  {len(targets)} exec(s)", "ok")
 
     if not targets and mode != "Financial Analysis Only":
-        log_fn(f"⚠  [{ticker}]  no executives listed — trying SalesQL title search …", "warn")
-        # Fallback: search SalesQL by company name + title when yfinance gives no officers
-        for _fb_role, _fb_title in [("CEO", "CEO"), ("CFO", "CFO")]:
-            try:
-                prog_fn(f"{ticker}  —  SalesQL title search: {_fb_role} …")
-                time.sleep(delay)
-                _fb_result = search_by_name_and_company("", company, title=_fb_title)
-                _fb_name = (_fb_result.get("full_name") or "").strip()
-                if _fb_name and (_fb_result.get("best_email") or _fb_result.get("phone")):
-                    targets.append({"name": _fb_name, "title": _fb_title})
-                    log_fn(f"  ✓ Found {_fb_role} via title search: {_fb_name}", "ok")
-            except Exception:
-                pass
+        # Fallback 1: Web search for "<Company> CEO/CFO" names
+        log_fn(f"⚠  [{ticker}]  no executives listed — searching web for CEO/CFO …", "warn")
+        try:
+            from lookup.web_search_fallback import search_executives as _web_search
+            prog_fn(f"{ticker}  —  web search: CEO/CFO names …")
+            _web_hits = _web_search(company, roles=["CEO", "CFO"], delay=delay)
+            for _wh in _web_hits:
+                targets.append(_wh)
+                log_fn(f"  ✓ Found {_wh['title']} via web search: {_wh['name']}", "ok")
+        except Exception:
+            pass
+
+        # Fallback 2: SalesQL title search (if web search still didn't find anyone)
+        if not targets:
+            log_fn(f"   [{ticker}]  web search empty — trying SalesQL title search …", "dim")
+            for _fb_role, _fb_title in [("CEO", "CEO"), ("CFO", "CFO")]:
+                try:
+                    prog_fn(f"{ticker}  —  SalesQL title search: {_fb_role} …")
+                    time.sleep(delay)
+                    _fb_result = search_by_name_and_company("", company, title=_fb_title)
+                    _fb_name = (_fb_result.get("full_name") or "").strip()
+                    if _fb_name and (_fb_result.get("best_email") or _fb_result.get("phone")):
+                        targets.append({"name": _fb_name, "title": _fb_title})
+                        log_fn(f"  ✓ Found {_fb_role} via title search: {_fb_name}", "ok")
+                except Exception:
+                    pass
 
     # ── Financials ─────────────────────────────────────────────────────────────
     fin: dict = {}
