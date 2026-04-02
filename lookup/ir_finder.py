@@ -103,7 +103,7 @@ def _headers() -> dict:
     }
 
 
-def _safe_get(url: str, timeout: int = 12) -> Optional[requests.Response]:
+def _safe_get(url: str, timeout: int = 8) -> Optional[requests.Response]:
     try:
         r = SESSION.get(url, headers=_headers(), timeout=timeout,
                         allow_redirects=True)
@@ -262,24 +262,33 @@ def _guess_ir_urls(website: str) -> list[str]:
     return candidates
 
 
-def _probe_ir_urls(candidates: list[str]) -> Optional[tuple[str, requests.Response]]:
+def _probe_ir_urls(candidates: list[str], max_seconds: float = 15.0) -> Optional[tuple[str, requests.Response]]:
     """
     Probe candidate URLs and return (url, response) for the first hit.
     Looks for IR-like content: "investor", "investor relations" keywords.
+
+    Hard time cap of max_seconds to avoid hanging the entire pipeline.
     """
+    import time as _t
+    deadline = _t.monotonic() + max_seconds
     ir_signal = re.compile(r"investor\s+relations|contact\s+ir|ir\s+contact",
                             re.IGNORECASE)
+
+    # First pass — look for IR-specific content
+    best_fallback: Optional[tuple[str, requests.Response]] = None
     for url in candidates:
-        r = _safe_get(url)
-        if r and ir_signal.search(r.text[:5000]):
-            return url, r
-        time.sleep(0.3)
-    # Second pass — accept any page that loaded
-    for url in candidates:
-        r = _safe_get(url)
+        if _t.monotonic() > deadline:
+            break
+        r = _safe_get(url, timeout=6)
         if r:
-            return url, r
-    return None
+            if ir_signal.search(r.text[:5000]):
+                return url, r
+            if best_fallback is None:
+                best_fallback = (url, r)  # remember first valid page
+        time.sleep(0.2)
+
+    # Return best fallback if we found any page (skip second full pass)
+    return best_fallback
 
 
 # ── SEC EDGAR fallback ────────────────────────────────────────────────────────

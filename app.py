@@ -434,6 +434,7 @@ def _fmt(val, kind: str = "") -> str:
 # ══════════════════════════════════════════════════════════════════════════════
 
 _LI_TIMEOUT = 12   # seconds before we give up on LinkedIn
+_EMPTY_IR   = {"ir_email": None, "ir_contact": None, "ir_page": None}
 
 
 def _find_li_safe(name: str, company: str, title: str) -> str:
@@ -795,11 +796,20 @@ def process_ticker(ticker: str, log_fn, prog_fn, skip_linkedin: bool, delay: flo
     except Exception:
         pass
 
-    # ── IR data ────────────────────────────────────────────────────────────────
+    # ── IR data (hard 20s timeout — IR probing can hang on slow sites) ────────
     prog_fn(f"{ticker}  —  finding IR contact …")
     log_fn(f"   [{ticker}]  fetching IR data …", "dim")
     try:
-        ir = find_ir_data(ticker=ticker, company=company, website=website)
+        _ir_box: list = [dict(_EMPTY_IR)]
+        def _ir_run():
+            try:
+                _ir_box[0] = find_ir_data(ticker=ticker, company=company, website=website)
+            except Exception:
+                pass
+        _ir_t = threading.Thread(target=_ir_run, daemon=True)
+        _ir_t.start()
+        _ir_t.join(timeout=20)
+        ir = _ir_box[0]
         log_fn(
             f"  {'✓' if ir.get('ir_email') else '·'} IR  "
             f"email={ir.get('ir_email') or '—'}  page={ir.get('ir_page') or '—'}",
