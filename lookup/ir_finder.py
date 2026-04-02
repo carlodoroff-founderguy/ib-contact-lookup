@@ -167,20 +167,42 @@ def _firm_of(email: str) -> Optional[str]:
 def _is_valid_ir_contact(contact: str) -> bool:
     """
     Return True only if this looks like a person name (possibly with firm).
-    Rejects scraped navigation text that contains site-structure keywords.
+    Rejects scraped navigation text, cookie banners, footer links, etc.
     """
-    if not contact or len(contact) > 80:
+    if not contact or len(contact) > 60:
         return False
-    if not re.match(r'^[A-Z]', contact.strip()):
+    c = contact.strip()
+    if not re.match(r'^[A-Z]', c):
         return False
+
+    # Must look like a person name: 2-4 capitalised words
+    # Optionally followed by (Firm Name) or , Title
+    name_part = re.split(r'[,(]', c)[0].strip()
+    name_words = name_part.split()
+    if len(name_words) < 2 or len(name_words) > 5:
+        return False
+    # Each word in the name part should be capitalised (or initial like "J.")
+    for w in name_words:
+        if not (w[0].isupper() or (len(w) <= 2 and w.endswith("."))):
+            return False
+
+    # Reject if it contains site-navigation / legal / UI keywords
     _nav_kw = {
-        "sec", "filings", "governance", "corporate", "management", "committee",
+        "sec", "filings", "governance", "corporate", "committee",
         "documents", "presentations", "annual", "quarterly", "report", "overview",
-        "releases", "events", "calendar", "press", "news", "ki", "menu", "nav",
-        "login", "home", "about", "services", "contact", "footer", "header",
+        "releases", "events", "calendar", "press", "news", "menu", "nav",
+        "login", "home", "about", "services", "footer", "header",
+        "privacy", "cookies", "trademarks", "terms", "conditions",
+        "copyright", "legal", "disclaimer", "subscribe", "alert",
+        "facebook", "facenbook", "twitter", "linkedin", "instagram",
+        "youtube", "rss", "feeds", "updates", "newsroom", "blog",
+        "locations", "careers", "faq", "faqs", "sitemap",
     }
-    words = set(re.findall(r'[a-z]+', contact.lower()))
-    return len(words & _nav_kw) < 2
+    words_lower = set(re.findall(r'[a-z]+', c.lower()))
+    if len(words_lower & _nav_kw) >= 1:
+        return False
+
+    return True
 
 
 def _extract_ir_contact(soup: BeautifulSoup, ir_email: Optional[str]) -> Optional[str]:

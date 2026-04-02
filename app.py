@@ -586,7 +586,19 @@ def process_ticker(ticker: str, log_fn, prog_fn, skip_linkedin: bool, delay: flo
     log_fn(f"✓  [{ticker}]  {company}  ·  {len(targets)} exec(s)", "ok")
 
     if not targets and mode != "Financial Analysis Only":
-        log_fn(f"⚠  [{ticker}]  no executives listed — will still fetch financials & IR", "warn")
+        log_fn(f"⚠  [{ticker}]  no executives listed — trying SalesQL title search …", "warn")
+        # Fallback: search SalesQL by company name + title when yfinance gives no officers
+        for _fb_role, _fb_title in [("CEO", "CEO"), ("CFO", "CFO")]:
+            try:
+                prog_fn(f"{ticker}  —  SalesQL title search: {_fb_role} …")
+                time.sleep(delay)
+                _fb_result = search_by_name_and_company("", company, title=_fb_title)
+                _fb_name = (_fb_result.get("full_name") or "").strip()
+                if _fb_name and (_fb_result.get("best_email") or _fb_result.get("phone")):
+                    targets.append({"name": _fb_name, "title": _fb_title})
+                    log_fn(f"  ✓ Found {_fb_role} via title search: {_fb_name}", "ok")
+            except Exception:
+                pass
 
     # ── Financials ─────────────────────────────────────────────────────────────
     fin: dict = {}
@@ -685,6 +697,22 @@ def process_ticker(ticker: str, log_fn, prog_fn, skip_linkedin: bool, delay: flo
                 log_fn(f"   [{ticker}]  SalesQL name search → {role}: {name} …", "dim")
                 time.sleep(delay)
                 enrichment = search_by_name_with_variations(first, last, name, company, website=website, is_spac=is_spac)
+
+                # ── Auto LinkedIn fallback: if SalesQL found nothing, try LinkedIn
+                #    even when the global toggle is off ─────────────────────────────
+                if not enrichment.get("best_email") and not enrichment.get("phone") and skip_linkedin:
+                    log_fn(f"   [{ticker}]  SalesQL empty → auto LinkedIn fallback for {name} …", "dim")
+                    prog_fn(f"{ticker}  —  LinkedIn fallback: {role} {name} …")
+                    li_url = _find_li_safe(name, company, title)
+                    if li_url:
+                        log_fn(f"   [{ticker}]  LinkedIn found: {li_url} → enriching …", "dim")
+                        time.sleep(delay)
+                        li_enrichment = enrich_by_url(li_url)
+                        if li_enrichment.get("best_email") or li_enrichment.get("phone"):
+                            li_enrichment["linkedin_url"] = li_url
+                            enrichment = li_enrichment
+                            log_fn(f"  ✓ {role}: {name} → {enrichment.get('best_email','—')} (via LinkedIn fallback)", "ok")
+
                 em = enrichment.get("best_email") or "—"
                 ph = enrichment.get("phone") or "—"
                 log_fn(

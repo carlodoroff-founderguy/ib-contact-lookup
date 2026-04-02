@@ -22,8 +22,8 @@
     "cfo_name": "Adeel Rouf",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "Known",
-    "notes": "CEO email pre-populated"
+    "source": "Known / Not found",
+    "notes": "CFO: Cached from earlier lookup"
   },
   "GPAT": {
     "company": "GP-Act III Acquisition Corp.",
@@ -945,8 +945,8 @@
     "cfo_name": "Nicholas Geeza, MBA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "XRPN": {
     "company": "Armada Acquisition Corp. II",
@@ -958,8 +958,8 @@
     "cfo_name": "Kyle Horton, MBA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "GTERA": {
     "company": "Globa Terra Acquisition Corp.",
@@ -984,8 +984,8 @@
     "cfo_name": "De Yin Chen, MBA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: Cached from earlier lookup"
   },
   "CGCT": {
     "company": "Cartesian Growth Corp. III",
@@ -997,8 +997,8 @@
     "cfo_name": "Rafael A. de Luque, CFA, MBA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "BLUW": {
     "company": "Blue Water Acquisition Corp. III",
@@ -1023,8 +1023,8 @@
     "cfo_name": "Qi Gong",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: Cached from earlier lookup"
   },
   "RAC": {
     "company": "Rithm Acquisition Corp.",
@@ -1036,8 +1036,8 @@
     "cfo_name": "Varun Wadhawan, MBA, CFA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "IRHO": {
     "company": "Iron Horse Acquisition II Corp.",
@@ -1049,8 +1049,8 @@
     "cfo_name": "William J. Caragol, Jr., CPA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "COPL": {
     "company": "Copley Acquisition Corp.",
@@ -1062,8 +1062,8 @@
     "cfo_name": "Menghan Zhang",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "LOKV": {
     "company": "Live Oak Acquisition Corp. V",
@@ -1075,8 +1075,8 @@
     "cfo_name": "Adam J. Fishman",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "CCII": {
     "company": "Cohen Circle Acquisition Corp. II",
@@ -1088,8 +1088,8 @@
     "cfo_name": "R. Maxwell Smeal, CPA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "NPAC": {
     "company": "New Providence Acquisition Corp. III (Cayman Islands)",
@@ -1101,8 +1101,8 @@
     "cfo_name": "Leo Valentine, CPA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "SSEA": {
     "company": "Starry Sea Acquisition Corp.",
@@ -1114,8 +1114,8 @@
     "cfo_name": "Kong Wai Yap",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "DAAQ": {
     "company": "Digital Asset Acquisition Corp.",
