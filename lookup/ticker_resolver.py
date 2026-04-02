@@ -82,8 +82,27 @@ def _officers_from_yfinance(ticker: str) -> Optional[dict]:
     if not _HAS_YFINANCE:
         return None
     try:
-        info = yf.Ticker(ticker).info
+        t = yf.Ticker(ticker)
+        info = t.info
         if not info or info.get("quoteType") == "NONE":
+            # Fallback: try fast_info to confirm the ticker exists
+            try:
+                fi = t.fast_info
+                if fi and getattr(fi, "last_price", None) is not None:
+                    # Ticker is valid but .info failed — return minimal data
+                    return {
+                        "ticker":         ticker,
+                        "company":        getattr(fi, "short_name", "") or ticker,
+                        "website":        "",
+                        "industry":       "",
+                        "city":           "",
+                        "state":          "",
+                        "country":        "",
+                        "employee_count": "",
+                        "executives":     [],
+                    }
+            except Exception:
+                pass
             return None
         executives = [
             {"name": o.get("name", "").strip(), "title": o.get("title", "").strip()}

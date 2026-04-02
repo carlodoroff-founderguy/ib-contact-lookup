@@ -322,7 +322,7 @@
     "cfo_email": "",
     "cfo_phone": "",
     "source": "Not found",
-    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
+    "notes": "CEO: All enrichment steps failed; CFO: Cached from earlier lookup"
   },
   "SOUL": {
     "company": "Soulpower Acquisition Corp.",
@@ -348,7 +348,7 @@
     "cfo_email": "",
     "cfo_phone": "",
     "source": "Not found",
-    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
+    "notes": "CEO: All enrichment steps failed; CFO: Cached from earlier lookup"
   },
   "DMAA": {
     "company": "Drugs Made In America Acquisition Corp.",
@@ -451,8 +451,8 @@
     "cfo_name": "Mike Rollins",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "PCSC": {
     "company": "Perceptive Capital Solutions Corp.",
@@ -464,8 +464,8 @@
     "cfo_name": "Shmuel M. Cohn, MBA, CPA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "AACB": {
     "company": "Artius II Acquisition, Inc.",
@@ -477,8 +477,8 @@
     "cfo_name": "Hong Boon Sim",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: Cached from earlier lookup"
   },
   "CHEC": {
     "company": "Chenghe Acquisition III Co.",
@@ -490,8 +490,8 @@
     "cfo_name": "Lyle Wang",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "SPEG": {
     "company": "Silver Pegasus Acquisition Corp.",
@@ -503,8 +503,8 @@
     "cfo_name": "Cesar Johnston",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: Cached from earlier lookup"
   },
   "ATII": {
     "company": "Archimedes Tech SPAC Partners II Co.",
@@ -516,8 +516,8 @@
     "cfo_name": "Daniel L. Sheehan",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "LAFA": {
     "company": "LaFayette Acquisition Corp.",
@@ -529,8 +529,8 @@
     "cfo_name": "Jennifer Rosario Calabrese, CPA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "INAC": {
     "company": "Indigo Acquisition Corp.",
@@ -542,8 +542,8 @@
     "cfo_name": "Scott E. Salpeter",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "PLMK": {
     "company": "Plum Acquisition Corp. IV",
@@ -555,8 +555,8 @@
     "cfo_name": "Steven Handwerker",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "ETHM": {
     "company": "Dynamix Corp. (Cayman Islands)",
@@ -568,8 +568,8 @@
     "cfo_name": "Nader Daylami",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "MLAC": {
     "company": "Mountain Lake Acquisition Corp.",
@@ -581,8 +581,8 @@
     "cfo_name": "Douglas Horlick",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "NTWO": {
     "company": "Newbury Street II Acquisition Corp.",
@@ -594,8 +594,8 @@
     "cfo_name": "Jake Gudoian",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "APAC": {
     "company": "StoneBridge Acquisition II Corp.",
@@ -607,8 +607,8 @@
     "cfo_name": "Prabhu Antony, MBA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "FACT": {
     "company": "FACT II Acquisition Corp.",
@@ -620,8 +620,8 @@
     "cfo_name": "Min Lee, MBA",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "RTAC": {
     "company": "Renatus Tactical Acquisition Corp. I",
@@ -646,8 +646,8 @@
     "cfo_name": "Daniel Fetters",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: Cached from earlier lookup"
   },
   "SDHI": {
     "company": "Siddhi Acquisition Corp.",
@@ -971,8 +971,8 @@
     "cfo_name": "Katherine Chiles",
     "cfo_email": "",
     "cfo_phone": "",
-    "source": "",
-    "notes": ""
+    "source": "Not found",
+    "notes": "CEO: All enrichment steps failed; CFO: All enrichment steps failed"
   },
   "LCCC": {
     "company": "Lakeshore Acquisition III Corp.",
